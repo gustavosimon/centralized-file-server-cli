@@ -39,12 +39,12 @@ struct FileEntity {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct RawFile {
+struct FileContent {
     name: String,
     content: Vec<u8>,
 }
 
-impl RawFile {
+impl FileContent {
     pub fn new(name: String, content: Vec<u8>) -> Self {
         Self { name, content }
     }
@@ -81,7 +81,7 @@ fn download_file(id: i32) {
     let result = create_http_client().get(url).send();
     match result {
         Ok(response) => {
-            let file: RawFile = serde_json::from_str(response.text().unwrap().as_str()).unwrap();
+            let file: FileContent = serde_json::from_str(response.text().unwrap().as_str()).unwrap();
             let mut arquivo = File::create(file.name).unwrap();
             let _ = arquivo.write_all(&file.content);
         }
@@ -94,7 +94,7 @@ fn upload_file(path: String) {
     let file_path = Path::new(&path);
     let file_name = file_path.file_name().unwrap().to_str().unwrap();
     let content: Vec<u8> = fs::read(&path).unwrap();
-    let raw_file = RawFile::new(file_name.to_string(), content);
+    let raw_file = FileContent::new(file_name.to_string(), content);
     let payload = serde_json::to_string(&raw_file).unwrap();
     let result = create_http_client()
         .post("http://localhost:3000/upload")
